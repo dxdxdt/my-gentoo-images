@@ -1,0 +1,34 @@
+name: Build seed stage
+run-name: Build seed stage
+on:
+  schedule:
+    # work through your fika you poor bastard
+    - cron: "16 00 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  i486-musl:
+    name: i486-musl-openrc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build docker builder image
+        run: docker build -t gentoo-musl-crossdev:latest .
+
+      - name: Build
+        run: docker run -i --name main gentoo-musl-crossdev:latest /opt/build-seed.sh
+
+      - name: Pull built stages out of container
+        run: |
+          docker cp main:/i486-musl-seed.tar.zst .
+          docker cp main:/i486-musl-seed.SHA256SUM .
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Seed stage
+          path: |
+            i486-musl-seed.tar.zst
+            i486-musl-seed.SHA256SUM
+          retention-days: 7
