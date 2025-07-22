@@ -16,7 +16,7 @@ PORTAGE_CONFIGROOT=/usr/i486-unknown-linux-musl \
 # works.
 # See https://bugs.gentoo.org/909453 (obviously, the patch didn't work)
 
-USE="openmp" emerge -v -e '>cross-i486-unknown-linux-musl/gcc-0.0.0'
+USE="openmp" emerge -qv -e '>cross-i486-unknown-linux-musl/gcc-0.0.0'
 
 #
 # Default to gnu17 to avoid K&R style function call issues (getenv() declaration
@@ -41,11 +41,18 @@ EOF
 # bash(1): If any part of word is quoted, the delimiter is the result of quote
 # removal on word,  and  the lines in the here-document are not expanded.
 
+# Optimise for size. Bloated modern SW would be big for old 486 HW
+echo 'CFLAGS="${CFLAGS} -Os"' >> '/usr/i486-unknown-linux-musl/etc/portage/make.conf'
+echo 'CXXFLAGS="${CXXFLAGS} -Os"' >> '/usr/i486-unknown-linux-musl/etc/portage/make.conf'
+
 # Let her rip!
 CC=i486-unknown-linux-musl-cc AR=i486-unknown-linux-musl-ar \
-	i486-unknown-linux-musl-emerge -v1 @system
+	i486-unknown-linux-musl-emerge -qv1 @system
 
 # Archive
+pushd /var/log
+	tar --zstd -cf /i486-musl-seed.logs.tar.zst *
+popd
 pushd /usr/i486-unknown-linux-musl
 	tar --zstd -cf /i486-musl-seed.tar.zst *
 popd

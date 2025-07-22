@@ -22,6 +22,7 @@ jobs:
       - name: Pull built stages out of container
         run: |
           docker cp main:/i486-musl-seed.tar.zst .
+          docker cp main:/i486-musl-seed.logs.tar.zst .
           docker cp main:/i486-musl-seed.SHA256SUM .
 
       - name: Upload
@@ -30,5 +31,6 @@ jobs:
           name: Seed stage
           path: |
             i486-musl-seed.tar.zst
+            i486-musl-seed.logs.tar.zst
             i486-musl-seed.SHA256SUM
-          retention-days: 7
+          retention-days: 14
