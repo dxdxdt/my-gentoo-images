@@ -3,7 +3,7 @@ run-name: Build seed stage
 on:
   schedule:
     # work through your fika you poor bastard
-    - cron: "16 00 * * *"
+    - cron: "16 00 * * mon"
   workflow_dispatch:
 permissions:
   contents: write
