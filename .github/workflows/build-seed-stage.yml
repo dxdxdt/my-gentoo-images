@@ -8,13 +8,35 @@ on:
 permissions:
   contents: write
 jobs:
-  i486-musl:
-    name: i486-musl-openrc
+  gentoo-musl-crossdev:
+    name: Make common builder docker image
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build docker builder image
+      - name: Run docker build
         run: docker build -t gentoo-musl-crossdev:latest .
+      - name: Export docker image
+        run: |
+          docker image save gentoo-musl-crossdev:latest |
+            zstd -T0 > 'gentoo-musl-crossdev.tar.zst'
+      - name: Upload builder docker image
+        uses: actions/upload-artifact@v4
+        with:
+          name: builder-image
+          path: gentoo-musl-crossdev.tar.zst
+          retention-days: 14
+
+  i486-musl-seed:
+    name: Build i486-musl seed stage
+    needs: gentoo-musl-crossdev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download docker builder image
+        uses: actions/download-artifact@v4
+        with:
+          name: builder-image
+      - name: Import docker builder image
+        run: zstdcat 'gentoo-musl-crossdev.tar.zst' | docker image load
 
       - name: Build
         run: docker run -i --name main gentoo-musl-crossdev:latest /opt/build-seed.sh
@@ -33,4 +55,62 @@ jobs:
             i486-musl-seed.tar.zst
             i486-musl-seed.logs.tar.zst
             i486-musl-seed.SHA256SUM
+          retention-days: 14
+
+  i486-linux-6-1_ibm300gl:
+    name: Build i486 kernel (6.1_ibm300gl)
+    needs: gentoo-musl-crossdev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download docker builder image
+        uses: actions/download-artifact@v4
+        with:
+          name: builder-image
+      - name: Import docker builder image
+        run: zstdcat 'gentoo-musl-crossdev.tar.zst' | docker image load
+
+      - name: Build
+        run: |
+          docker run -i --name main gentoo-musl-crossdev:latest \
+            /opt/build-kernel.sh 6.1.140 config-6.1_ibm300gl-rev0
+
+      - name: Pull built kernel out of container
+        run: |
+          docker cp main:/kernel.* .
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kernel-6.1.140_ibm300gl
+          path: |
+            kernel-6.1.140.*
+          retention-days: 14
+
+  i486-linux-6-12_ibm300gl:
+    name: Build i486 kernel (6.12_ibm300gl)
+    needs: gentoo-musl-crossdev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download docker builder image
+        uses: actions/download-artifact@v4
+        with:
+          name: builder-image
+      - name: Import docker builder image
+        run: zstdcat 'gentoo-musl-crossdev.tar.zst' | docker image load
+
+      - name: Build
+        run: |
+          docker run -i --name main gentoo-musl-crossdev:latest \
+            /opt/build-kernel.sh 6.12.31 config-6.12_ibm300gl-rev0
+
+      - name: Pull built kernel out of container
+        run: |
+          docker cp main:/kernel.* .
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kernel-6.12.31_ibm300gl
+          path: |
+            kernel-6.12.31.*
           retention-days: 14
