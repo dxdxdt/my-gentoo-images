@@ -1,5 +1,5 @@
-name: Build seed stage
-run-name: Build seed stage
+name: Build ALL
+run-name: Build ALL
 on:
   schedule:
     # work through your fika you poor bastard
@@ -76,14 +76,16 @@ jobs:
 
       - name: Pull built kernel out of container
         run: |
-          docker cp main:/kernel.* .
+          docker cp main:/kernel.tar .
+          docker cp main:/kernel.SHA256SUM .
 
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: Kernel-6.1.140_ibm300gl
           path: |
-            kernel-6.1.140.*
+            kernel.tar
+            kernel.SHA256SUM
           retention-days: 14
 
   i486-linux-6-12_ibm300gl:
@@ -101,16 +103,18 @@ jobs:
       - name: Build
         run: |
           docker run -i --name main gentoo-musl-crossdev:latest \
-            /opt/build-kernel.sh 6.12.31 config-6.12_ibm300gl-rev0
+            /opt/build-kernel.sh 6.12.31 config-6.12_ibm300gl-rev1
 
       - name: Pull built kernel out of container
         run: |
-          docker cp main:/kernel.* .
+          docker cp main:/kernel.tar .
+          docker cp main:/kernel.SHA256SUM .
 
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: Kernel-6.12.31_ibm300gl
           path: |
-            kernel-6.12.31.*
+            kernel.tar
+            kernel.SHA256SUM
           retention-days: 14

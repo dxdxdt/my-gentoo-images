@@ -6,7 +6,8 @@ COPY --from=portage /var/db/repos/gentoo /var/db/repos/gentoo
 
 RUN mkdir -p /opt
 COPY build-seed.sh build-kernel.sh /opt/
-COPY kernel/ /opt/
-RUN chmod 755 /opt/build-seed.sh
+COPY kernel /opt/kernel
 
-RUN emerge -v sys-devel/crossdev app-eselect/eselect-repository
+RUN emerge -qv sys-devel/crossdev app-eselect/eselect-repository
+RUN eselect repository create crossdev
+RUN crossdev -s4 -t i486-unknown-linux-musl

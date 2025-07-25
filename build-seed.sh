@@ -1,10 +1,9 @@
 #!/bin/bash
 set -o pipefail
+set -e
 
 # crossdev stages
 
-eselect repository create crossdev
-crossdev -s4 -t i486-unknown-linux-musl
 PORTAGE_CONFIGROOT=/usr/i486-unknown-linux-musl \
 	eselect profile set default/linux/x86/23.0/i486/split-usr/musl
 
