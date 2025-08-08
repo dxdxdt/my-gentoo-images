@@ -1,5 +1,5 @@
-name: Build ALL
-run-name: Build ALL
+name: gentoo-i486-musl
+run-name: gentoo-i486-musl
 on:
   schedule:
     # work through your fika you poor bastard
@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run docker build
-        run: docker build -t gentoo-musl-crossdev:latest .
+        run: docker build -t gentoo-musl-crossdev:latest i486-musl
       - name: Export docker image
         run: |
           docker image save gentoo-musl-crossdev:latest |
