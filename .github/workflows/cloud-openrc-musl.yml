@@ -8,45 +8,41 @@ on:
 permissions:
   contents: write
 jobs:
-  gentoo-openrc-musl-cloud-amd64:
-    name: Make gentoo-openrc-musl-cloud-amd64
-    runs-on: ubuntu-latest
+  gentoo-openrc-musl-cloud:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
+    name: Make gentoo-openrc-musl-cloud ${{ matrix.runner }}
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
+      - name: Set up the env var set
+        run: ./cloud-openrc-musl/set-env.sh ${{ matrix.runner }} >> $GITHUB_ENV
+      - name: Make room for kernel build
+        run: |
+          sudo rm -rf \
+            /opt/microsoft/powershell \
+            /bin/pwsh \
+            /usr/share/dotnet \
+            /usr/local/lib/android \
+            /opt/ghc \
+            /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force
+          sudo df -h
       - name: Build
         run: |
           cd cloud-openrc-musl
           docker build \
-            --platform linux/amd64 -t gentoo-openrc-musl-cloud:latest .
-          ./mkimg.sh gentoo-openrc-musl-cloud gentoo-openrc-musl-cloud-amd64.raw
-          sha256sum -b gentoo-openrc-musl-cloud-amd64.raw |
-            tee gentoo-openrc-musl-cloud-amd64.SHA256
+            --platform linux/$GH_ARCH -t gentoo-openrc-musl-cloud:latest .
+          sudo ./mkimg.sh gentoo-openrc-musl-cloud gentoo-openrc-musl-cloud-$GH_ARCH.raw
+          sha256sum -b gentoo-openrc-musl-cloud-$GH_ARCH.raw |
+            tee gentoo-openrc-musl-cloud-$GH_ARCH.SHA256
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: gentoo-openrc-musl-cloud-amd64
+          name: gentoo-openrc-musl-cloud-$GH_ARCH
           path: |
-            gentoo-openrc-musl-cloud-amd64.raw
-            gentoo-openrc-musl-cloud-amd64.SHA256
-          retention-days: 14
-  gentoo-openrc-musl-cloud-arm64:
-    name: Make gentoo-openrc-musl-cloud-arm64
-    runs-on: ubuntu-arm64-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build
-        run: |
-          cd cloud-openrc-musl
-          docker build \
-            --platform linux/arm64 -t gentoo-openrc-musl-cloud:latest .
-          ./mkimg.sh gentoo-openrc-musl-cloud gentoo-openrc-musl-cloud-arm64.raw
-          sha256sum -b gentoo-openrc-musl-cloud-arm64.raw |
-            tee gentoo-openrc-musl-cloud-arm64.SHA256
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: gentoo-openrc-musl-cloud-arm64
-          path: |
-            gentoo-openrc-musl-cloud-arm64.raw
-            gentoo-openrc-musl-cloud-arm64.SHA256
+            gentoo-openrc-musl-cloud-$GH_ARCH.raw
+            gentoo-openrc-musl-cloud-$GH_ARCH.SHA256
           retention-days: 14
