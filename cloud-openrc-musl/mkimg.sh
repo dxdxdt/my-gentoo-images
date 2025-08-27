@@ -4,6 +4,7 @@ set -o pipefail
 
 declare -r DOCKER_IMAGE="$1"
 declare -r OUTPUT_IMAGE="$2"
+declare -r GRUB_TARGET="$3"
 declare -r LABEL_ESP="GENTOO-ESP"
 declare -r LABEL_ROOT="gentoo-root"
 
@@ -44,7 +45,11 @@ rm -f /mnt/gentoo/etc/fstab
 echo "LABEL=$LABEL_ROOT  / xfs defaults 0 1" >> /mnt/gentoo/etc/fstab
 echo "LABEL=$LABEL_ESP /boot/efi defaults 1 2" >> /mnt/gentoo/etc/fstab
 
-chroot /mnt/gentoo grub-install --efi-directory=/boot/efi --removable
+chroot \
+	/mnt/gentoo grub-install \
+	--efi-directory=/boot/efi \
+	--removable \
+	--target=$GRUB_TARGET
 chroot /mnt/gentoo grub-mkconfig -o /boot/grub/grub.cfg
 
 umount -R /mnt/gentoo

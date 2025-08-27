@@ -35,7 +35,7 @@ jobs:
           cd cloud-openrc-musl
           docker build \
             --platform linux/$GH_ARCH -t gentoo-openrc-musl-cloud:latest .
-          sudo ./mkimg.sh gentoo-openrc-musl-cloud gentoo-openrc-musl-cloud-$GH_ARCH.raw
+          sudo ./mkimg.sh gentoo-openrc-musl-cloud gentoo-openrc-musl-cloud-$GH_ARCH.raw $GH_GRUB_TARGET
           sha256sum -b gentoo-openrc-musl-cloud-$GH_ARCH.raw |
             tee gentoo-openrc-musl-cloud-$GH_ARCH.SHA256
       - name: Upload
