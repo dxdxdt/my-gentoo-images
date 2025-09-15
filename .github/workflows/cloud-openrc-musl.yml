@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up the env var set
-        run: ./cloud-openrc-musl/set-env.sh ${{ matrix.runner }} >> $GITHUB_ENV
+        run: ./cloud-openrc-musl/set-env.sh ${{ matrix.runner }} >> "$GITHUB_ENV"
       - name: Make room for kernel build
         run: |
           sudo rm -rf \
@@ -43,6 +43,6 @@ jobs:
         with:
           name: gentoo-openrc-musl-cloud-$GH_ARCH
           path: |
-            gentoo-openrc-musl-cloud-$GH_ARCH.raw
-            gentoo-openrc-musl-cloud-$GH_ARCH.SHA256
+            gentoo-openrc-musl-cloud-*.raw
+            gentoo-openrc-musl-cloud-*.SHA256
           retention-days: 14
